@@ -6,6 +6,8 @@ iGauchoBack is a mobile-friendly degree-planning platform that turns university 
 
 [Open the production app](https://igauchoback.vercel.app/) · [Explore majors](https://igauchoback.vercel.app/explore)
 
+**Just want to use iGauchoBack?** Use the public website—there is nothing to install. The local setup instructions below are only for contributors, maintainers, testers, and people who want to self-host the project.
+
 > iGauchoBack is an independent advising aid. It is not affiliated with, endorsed by, or a replacement for an official university catalog, degree audit, or academic advisor. Always confirm requirements with the relevant institution.
 
 ## Project status
@@ -15,7 +17,7 @@ iGauchoBack is deployed and actively developed.
 - **UC Santa Barbara:** broad undergraduate coverage, selected graduate roadmaps, course search, and grade-distribution tools
 - **UCLA:** early engineering preview
 - **UC Berkeley:** early engineering preview
-- **Local development:** works immediately from versioned JSON data
+- **Contributor experience:** local development works immediately from versioned JSON data
 - **Connected mode:** optional Supabase-backed authentication, contributions, community features, and collaborative planning
 
 Coverage varies by school and program. A listed major may have a requirements guide before it has a complete interactive graph.
@@ -89,7 +91,9 @@ The application is intentionally useful without external services. When Supabase
     └── tests/                # Planner and transcript tests
 ```
 
-## Run locally
+## For contributors and developers
+
+You do not need to run the project locally to use iGauchoBack. A local installation is useful when you want to contribute code or academic data, test a change before opening a pull request, run validation tools, or operate your own deployment.
 
 ### Requirements
 
