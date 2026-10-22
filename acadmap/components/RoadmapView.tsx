@@ -1,14 +1,12 @@
 "use client";
 
+import dynamic from "next/dynamic";
 import { useCallback, useMemo, useState } from "react";
 import type { Node, NodeMouseHandler } from "@xyflow/react";
 
-import { PlannerWorkspace } from "@/components/planner/PlannerWorkspace";
-import { RoadmapAnalysisPanel } from "@/components/RoadmapAnalysisPanel";
 import { RoadmapGraph } from "@/components/RoadmapGraph";
 import { RoadmapGraphErrorBoundary } from "@/components/RoadmapGraphErrorBoundary";
 import { Sidebar } from "@/components/Sidebar";
-import { TranscriptUploadPanel } from "@/components/TranscriptUploadPanel";
 import {
   buildGraph,
   findBottlenecks,
@@ -27,6 +25,30 @@ import type { iGauchoBackNodeData, RoadmapDetail } from "@/lib/types";
 import { useRoadmapSchedule } from "@/lib/use-roadmap-schedule";
 import type { DepartmentFacultyFile } from "@/lib/ucsb-faculty-types";
 
+const TranscriptUploadPanel = dynamic(
+  () =>
+    import("@/components/TranscriptUploadPanel").then(
+      (module) => module.TranscriptUploadPanel,
+    ),
+  { ssr: false },
+);
+
+const RoadmapAnalysisPanel = dynamic(
+  () =>
+    import("@/components/RoadmapAnalysisPanel").then(
+      (module) => module.RoadmapAnalysisPanel,
+    ),
+  { ssr: false },
+);
+
+const PlannerWorkspace = dynamic(
+  () =>
+    import("@/components/planner/PlannerWorkspace").then(
+      (module) => module.PlannerWorkspace,
+    ),
+  { ssr: false },
+);
+
 type ExternalRule = {
   exam?: string;
   source?: string;
@@ -38,6 +60,7 @@ type ExternalRule = {
 
 export type RoadmapViewProps = {
   roadmap: RoadmapDetail;
+  majorHref: string;
   departmentFaculty?: DepartmentFacultyFile | null;
   defaultCatalogQuarter?: string;
   auditRules: DegreeAuditRules | null;
@@ -62,6 +85,7 @@ function statusMapFromSchedule(
 
 export function RoadmapView({
   roadmap,
+  majorHref,
   departmentFaculty,
   defaultCatalogQuarter,
   auditRules,
@@ -278,10 +302,10 @@ export function RoadmapView({
 
   return (
     <div className="space-y-4">
-      <div className="flex h-[calc(100vh-8.5rem)] min-h-[520px] flex-col gap-4 lg:flex-row">
-        <div className="min-h-[360px] flex-1 lg:min-h-0">
+      <div className="flex flex-col gap-4 lg:h-[calc(100vh-8.5rem)] lg:min-h-[520px] lg:flex-row">
+        <div className="h-[68svh] min-h-[420px] flex-1 lg:h-auto lg:min-h-0">
           <RoadmapGraphErrorBoundary
-            majorHref={`/schools/${roadmap.school.short_name}/engineering/${roadmap.major.slug}`}
+            majorHref={majorHref}
             majorName={roadmap.major.name}
           >
             <RoadmapGraph
@@ -290,11 +314,27 @@ export function RoadmapView({
               focusedNodeId={selectedNodeId}
               onNodeClick={onNodeClick}
               onPaneClick={onPaneClick}
-              className="h-full min-h-[360px]"
+              className="h-full min-h-[420px] lg:min-h-[360px]"
             />
           </RoadmapGraphErrorBoundary>
         </div>
-        <div className="h-[280px] shrink-0 lg:h-auto lg:w-[340px]">
+        {selectedNodeId ? (
+          <button
+            type="button"
+            aria-label="Close course details"
+            className="fixed inset-0 z-40 bg-slate-950/50 lg:hidden"
+            onClick={onClose}
+          />
+        ) : null}
+        <div
+          className={[
+            "shrink-0",
+            selectedNodeId
+              ? "fixed inset-x-0 bottom-0 z-50 h-[min(72svh,640px)] p-3 pb-[calc(env(safe-area-inset-bottom)+0.75rem)]"
+              : "hidden",
+            "lg:static lg:block lg:h-auto lg:w-[340px] lg:p-0",
+          ].join(" ")}
+        >
           <Sidebar
             selectedNode={sidebarNode as Node<iGauchoBackNodeData> | null}
             departmentFaculty={departmentFaculty}

@@ -60,6 +60,15 @@ export default async function RoadmapPage({ params }: PageProps) {
     : undefined;
 
   const plannerCollabEnabled = isPlannerCollabEnabled();
+  const majorHref = isUcsb
+    ? isGrad
+      ? "/schools/ucsb/graduate"
+      : isCoe
+        ? coeMajorHubHref("ucsb", major)
+        : lsMajorHubHref("ucsb", major)
+    : isCoe
+      ? coeMajorHubHref(roadmap.school.short_name, major)
+      : schoolHubHref(roadmap.school.short_name);
   const connector = getUcsbConnector();
   const [auditRules, creditRules] = await Promise.all([
     connector.getDegreeAuditRules(roadmap.school.short_name, roadmap.major.slug),
@@ -161,6 +170,7 @@ export default async function RoadmapPage({ params }: PageProps) {
 
       <RoadmapView
         roadmap={roadmap}
+        majorHref={majorHref}
         departmentFaculty={departmentFaculty}
         defaultCatalogQuarter={defaultCatalogQuarter}
         auditRules={auditRules}

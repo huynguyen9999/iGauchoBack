@@ -133,29 +133,5 @@ export function parseCoursesFromText(
 
   const courses = [...map.values()].sort((a, b) => a.code.localeCompare(b.code));
 
-  // #region agent log
-  fetch("http://127.0.0.1:7831/ingest/e16f4ef7-dba8-4ded-ac8f-0f0a350f1814", {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-      "X-Debug-Session-Id": "989c05",
-    },
-    body: JSON.stringify({
-      sessionId: "989c05",
-      runId: "pre-fix",
-      hypothesisId: "A",
-      location: "parse-courses-regex.ts:parseCoursesFromText",
-      message: "regex parse summary",
-      data: {
-        textLen: text.length,
-        courseCount: courses.length,
-        sampleCodes: courses.slice(0, 8).map((c) => c.code),
-        school: school ?? null,
-      },
-      timestamp: Date.now(),
-    }),
-  }).catch(() => {});
-  // #endregion
-
   return courses;
 }

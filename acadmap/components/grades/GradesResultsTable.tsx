@@ -1,5 +1,7 @@
 "use client";
 
+import { useEffect, useState } from "react";
+
 import type { GradesSearchEntry } from "@/lib/ucsb-grades-types";
 import { formatGpa } from "@/lib/ucsb-grades-utils";
 
@@ -14,6 +16,12 @@ export function GradesResultsTable({
   selectedCourseId,
   onSelect,
 }: GradesResultsTableProps) {
+  const [visibleCount, setVisibleCount] = useState(50);
+
+  useEffect(() => {
+    setVisibleCount(50);
+  }, [courses]);
+
   if (courses.length === 0) {
     return (
       <div className="rounded-xl border border-dashed border-gaucho-blue-light/30 bg-slate-50 px-6 py-12 text-center dark:bg-slate-900/40">
@@ -41,24 +49,30 @@ export function GradesResultsTable({
           </tr>
         </thead>
         <tbody>
-          {courses.map((course) => {
+          {courses.slice(0, visibleCount).map((course) => {
             const selected = selectedCourseId === course.courseId;
             return (
               <tr
                 key={course.courseId}
-                onClick={() => onSelect(course)}
                 className={[
-                  "cursor-pointer border-b border-gaucho-blue-light/10 transition last:border-0",
+                  "border-b border-gaucho-blue-light/10 transition last:border-0",
                   selected
                     ? "bg-teal-500/10"
                     : "hover:bg-slate-50 dark:hover:bg-slate-800/50",
                 ].join(" ")}
               >
                 <td className="px-4 py-3">
-                  <span className="font-mono text-xs font-semibold text-gaucho-blue dark:text-gaucho-gold">
-                    {course.courseId}
-                  </span>
-                  <span className="ml-2 text-xs text-slate-500">{course.dept}</span>
+                  <button
+                    type="button"
+                    onClick={() => onSelect(course)}
+                    aria-pressed={selected}
+                    className="inline-flex min-h-11 items-center rounded-md px-2 text-left transition hover:bg-teal-500/10"
+                  >
+                    <span className="font-mono text-xs font-semibold text-gaucho-blue dark:text-gaucho-gold">
+                      {course.courseId}
+                    </span>
+                    <span className="ml-2 text-xs text-slate-500">{course.dept}</span>
+                  </button>
                 </td>
                 <td className="px-4 py-3 font-mono text-slate-700 dark:text-slate-300">
                   {formatGpa(course.avgGpa)}
@@ -71,6 +85,17 @@ export function GradesResultsTable({
           })}
         </tbody>
       </table>
+      {visibleCount < courses.length ? (
+        <div className="border-t border-gaucho-blue-light/15 bg-slate-50 p-3 text-center dark:bg-slate-900/50">
+          <button
+            type="button"
+            className="btn-secondary min-w-40"
+            onClick={() => setVisibleCount((count) => count + 50)}
+          >
+            Show more ({courses.length - visibleCount} remaining)
+          </button>
+        </div>
+      ) : null}
     </div>
   );
 }

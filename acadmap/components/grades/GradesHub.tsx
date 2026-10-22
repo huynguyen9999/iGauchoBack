@@ -245,14 +245,22 @@ export function GradesHub({
     <div className="space-y-6">
       {metaBanner}
 
-      <div className="flex flex-wrap gap-1 rounded-lg border border-gaucho-blue/15 bg-slate-50 p-1 dark:border-gaucho-gold/15 dark:bg-slate-800">
+      <div
+        className="flex flex-wrap gap-1 rounded-lg border border-gaucho-blue/15 bg-slate-50 p-1 dark:border-gaucho-gold/15 dark:bg-slate-800"
+        role="tablist"
+        aria-label="Grades tools"
+      >
         {TABS.map(({ id, label }) => (
           <button
             key={id}
             type="button"
             onClick={() => handleTabChange(id)}
+            role="tab"
+            aria-selected={tab === id}
+            aria-controls={`grades-panel-${id}`}
+            id={`grades-tab-${id}`}
             className={[
-              "rounded-md px-4 py-2 text-sm font-medium transition",
+              "min-h-11 rounded-md px-4 py-2 text-sm font-medium transition",
               tab === id
                 ? "bg-teal-600 text-white"
                 : "text-slate-600 hover:text-gaucho-blue dark:text-slate-300",
@@ -264,7 +272,12 @@ export function GradesHub({
       </div>
 
       {tab === "search" && (
-        <div className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_minmax(0,380px)]">
+        <div
+          id="grades-panel-search"
+          role="tabpanel"
+          aria-labelledby="grades-tab-search"
+          className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_minmax(0,380px)]"
+        >
           <div className="space-y-4">
             <GradesSearchForm
               departments={initialDepartments}
@@ -306,21 +319,29 @@ export function GradesHub({
       )}
 
       {tab === "ge" && (
-        <GeAreaExplorer
-          areas={geAreas}
-          selectedArea={geArea}
-          courses={geCourses}
-          loading={loadingGe}
-          onAreaChange={handleGeAreaChange}
-          onSelectCourse={(courseId) => handleSelectCourse(courseId)}
-        />
+        <div id="grades-panel-ge" role="tabpanel" aria-labelledby="grades-tab-ge">
+          <GeAreaExplorer
+            areas={geAreas}
+            selectedArea={geArea}
+            courses={geCourses}
+            loading={loadingGe}
+            onAreaChange={handleGeAreaChange}
+            onSelectCourse={(courseId) => handleSelectCourse(courseId)}
+          />
+        </div>
       )}
 
       {tab === "leaderboards" && (
-        <GradesLeaderboard
-          leaderboards={leaderboards}
-          onSelectCourse={(courseId) => handleSelectCourse(courseId)}
-        />
+        <div
+          id="grades-panel-leaderboards"
+          role="tabpanel"
+          aria-labelledby="grades-tab-leaderboards"
+        >
+          <GradesLeaderboard
+            leaderboards={leaderboards}
+            onSelectCourse={(courseId) => handleSelectCourse(courseId)}
+          />
+        </div>
       )}
     </div>
   );

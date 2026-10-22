@@ -31,7 +31,7 @@ export function GradesSearchForm({
         <select
           value={dept}
           onChange={(e) => onDeptChange(e.target.value)}
-          className="rounded-lg border border-gaucho-blue/20 bg-slate-50 px-3 py-2 text-sm dark:border-gaucho-gold/20 dark:bg-slate-800"
+          className="min-h-11 rounded-lg border border-gaucho-blue/20 bg-slate-50 px-3 py-2 text-base dark:border-gaucho-gold/20 dark:bg-slate-800 sm:text-sm"
         >
           <option value="">All departments</option>
           {departments.map((d) => (
@@ -51,7 +51,7 @@ export function GradesSearchForm({
           value={query}
           onChange={(e) => onQueryChange(e.target.value)}
           placeholder="e.g. ECE 130A, CMPSC 16…"
-          className="rounded-lg border border-gaucho-blue/20 bg-slate-50 px-3 py-2 text-sm dark:border-gaucho-gold/20 dark:bg-slate-800"
+          className="min-h-11 rounded-lg border border-gaucho-blue/20 bg-slate-50 px-3 py-2 text-base dark:border-gaucho-gold/20 dark:bg-slate-800 sm:text-sm"
         />
       </label>
 
@@ -72,11 +72,12 @@ export function GradesSearchForm({
               type="button"
               onClick={() => onSortChange(value)}
               className={[
-                "rounded-md px-3 py-1.5 text-xs font-medium transition",
+                "min-h-11 rounded-md px-3 py-2 text-xs font-medium transition",
                 sort === value
                   ? "bg-teal-600 text-white"
                   : "text-slate-600 hover:text-gaucho-blue dark:text-slate-300",
               ].join(" ")}
+              aria-pressed={sort === value}
             >
               {label}
             </button>

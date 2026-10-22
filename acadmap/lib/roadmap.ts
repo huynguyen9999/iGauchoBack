@@ -1,5 +1,6 @@
 import { promises as fs } from "fs";
 import path from "path";
+import { cache } from "react";
 
 import { isSupabaseConfigured } from "@/lib/env";
 import { createAdminClient } from "@/lib/supabase-admin";
@@ -83,7 +84,7 @@ export function seedInputToDetail(
 }
 
 /** Read every JSON seed (server-only). All seeds are treated as approved. */
-export async function loadSeedRoadmapDetails(): Promise<RoadmapDetail[]> {
+export const loadSeedRoadmapDetails = cache(async (): Promise<RoadmapDetail[]> => {
   if (typeof window !== "undefined") {
     throw new Error("loadSeedRoadmapDetails() must run on the server");
   }
@@ -95,21 +96,23 @@ export async function loadSeedRoadmapDetails(): Promise<RoadmapDetail[]> {
     return [];
   }
 
-  const details: RoadmapDetail[] = [];
-
-  for (const file of entries.filter((f) => f.endsWith(".json"))) {
-    const raw = await fs.readFile(path.join(SEEDS_DIR, file), "utf-8");
-    const parsed = JSON.parse(raw) as SeedRoadmapInput;
-    const base = file.replace(/\.json$/, "");
-    details.push(seedInputToDetail(parsed, `seed-${base}`));
-  }
+  const details = await Promise.all(
+    entries
+      .filter((file) => file.endsWith(".json"))
+      .map(async (file) => {
+        const raw = await fs.readFile(path.join(SEEDS_DIR, file), "utf-8");
+        const parsed = JSON.parse(raw) as SeedRoadmapInput;
+        const base = file.replace(/\.json$/, "");
+        return seedInputToDetail(parsed, `seed-${base}`);
+      }),
+  );
 
   return details.sort((a, b) =>
     `${a.school.short_name}-${a.major.slug}`.localeCompare(
       `${b.school.short_name}-${b.major.slug}`,
     ),
   );
-}
+});
 
 function detailToListItem(detail: RoadmapDetail): RoadmapListItem {
   return {

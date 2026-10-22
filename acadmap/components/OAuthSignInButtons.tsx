@@ -16,7 +16,7 @@ export type OAuthSignInButtonsProps = {
 };
 
 const buttonBase =
-  "inline-flex w-full items-center justify-center rounded-lg px-4 py-2.5 text-sm font-semibold transition disabled:cursor-not-allowed disabled:opacity-60";
+  "inline-flex min-h-11 w-full items-center justify-center rounded-lg px-4 py-2.5 text-sm font-semibold transition disabled:cursor-not-allowed disabled:opacity-60";
 
 function formatOAuthError(provider: OAuthProvider, message: string): string {
   if (!message.includes("missing OAuth secret")) {
