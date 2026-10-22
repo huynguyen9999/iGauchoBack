@@ -128,8 +128,7 @@ export function RoadmapGraph({
       requestAnimationFrame(() => {
         if (window.matchMedia("(max-width: 639px)").matches) {
           instance.fitView({
-            nodes: instance.getNodes().slice(0, 3),
-            padding: 0.35,
+            padding: 0.15,
             maxZoom: 0.8,
           });
           return;

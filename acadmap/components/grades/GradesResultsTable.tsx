@@ -5,6 +5,8 @@ import { useEffect, useState } from "react";
 import type { GradesSearchEntry } from "@/lib/ucsb-grades-types";
 import { formatGpa } from "@/lib/ucsb-grades-utils";
 
+const RESULTS_PAGE_SIZE = 50;
+
 export type GradesResultsTableProps = {
   courses: GradesSearchEntry[];
   selectedCourseId: string | null;
@@ -16,10 +18,10 @@ export function GradesResultsTable({
   selectedCourseId,
   onSelect,
 }: GradesResultsTableProps) {
-  const [visibleCount, setVisibleCount] = useState(50);
+  const [visibleCount, setVisibleCount] = useState(RESULTS_PAGE_SIZE);
 
   useEffect(() => {
-    setVisibleCount(50);
+    setVisibleCount(RESULTS_PAGE_SIZE);
   }, [courses]);
 
   if (courses.length === 0) {
@@ -90,7 +92,9 @@ export function GradesResultsTable({
           <button
             type="button"
             className="btn-secondary min-w-40"
-            onClick={() => setVisibleCount((count) => count + 50)}
+            onClick={() =>
+              setVisibleCount((count) => count + RESULTS_PAGE_SIZE)
+            }
           >
             Show more ({courses.length - visibleCount} remaining)
           </button>

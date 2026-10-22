@@ -3,7 +3,7 @@
 import Image from "next/image";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 
 import { AuthControls } from "@/components/AuthControls";
 import { ThemeToggle } from "@/components/ThemeToggle";
@@ -45,6 +45,16 @@ function isGradesNavActive(pathname: string, href: string): boolean {
   return href === "/schools/ucsb/grades" && pathname.startsWith(href);
 }
 
+function isNavLinkActive(pathname: string, link: NavLink): boolean {
+  if (link.accent === "graduate") {
+    return isGraduateNavActive(pathname, link.href);
+  }
+  if (link.accent === "grades") {
+    return isGradesNavActive(pathname, link.href);
+  }
+  return link.href === "/" ? pathname === "/" : pathname.startsWith(link.href);
+}
+
 export type NavbarProps = {
   className?: string;
   initialAuth: NavAuthState;
@@ -53,6 +63,7 @@ export type NavbarProps = {
 export function Navbar({ className = "", initialAuth }: NavbarProps) {
   const pathname = usePathname();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const mobileMenuButtonRef = useRef<HTMLButtonElement>(null);
   const activeSchool = schoolFromPath(pathname);
   const showUcsbTools = !activeSchool || activeSchool === "ucsb";
 
@@ -68,7 +79,10 @@ export function Navbar({ className = "", initialAuth }: NavbarProps) {
     if (!mobileMenuOpen) return;
 
     const onKeyDown = (event: KeyboardEvent) => {
-      if (event.key === "Escape") setMobileMenuOpen(false);
+      if (event.key === "Escape") {
+        setMobileMenuOpen(false);
+        mobileMenuButtonRef.current?.focus();
+      }
     };
     window.addEventListener("keydown", onKeyDown);
     return () => window.removeEventListener("keydown", onKeyDown);
@@ -103,15 +117,9 @@ export function Navbar({ className = "", initialAuth }: NavbarProps) {
             className="flex min-w-0 items-center gap-0.5 rounded-lg border border-gaucho-blue/15 bg-slate-50 p-0.5 dark:border-gaucho-gold/20 dark:bg-gaucho-blue/30"
             aria-label="Main"
           >
-            {visibleLinks.map(({ href, label, accent }) => {
-              const active =
-                accent === "graduate"
-                  ? isGraduateNavActive(pathname, href)
-                  : accent === "grades"
-                    ? isGradesNavActive(pathname, href)
-                    : href === "/"
-                      ? pathname === "/"
-                      : pathname.startsWith(href);
+            {visibleLinks.map((link) => {
+              const { href, label, accent } = link;
+              const active = isNavLinkActive(pathname, link);
 
               return (
                 <Link
@@ -144,6 +152,7 @@ export function Navbar({ className = "", initialAuth }: NavbarProps) {
         <div className="flex items-center gap-1 xl:hidden">
           <ThemeToggle />
           <button
+            ref={mobileMenuButtonRef}
             type="button"
             onClick={() => setMobileMenuOpen((open) => !open)}
             className="inline-flex min-h-11 min-w-11 items-center justify-center rounded-md border border-gaucho-blue/20 text-gaucho-blue transition hover:bg-gaucho-blue/5 dark:border-gaucho-gold/30 dark:text-gaucho-gold dark:hover:bg-gaucho-blue/40"
@@ -165,8 +174,9 @@ export function Navbar({ className = "", initialAuth }: NavbarProps) {
           className="border-t border-gaucho-blue/10 px-4 pb-4 pt-3 dark:border-gaucho-gold/15 xl:hidden"
         >
           <nav className="grid grid-cols-2 gap-2" aria-label="Mobile main navigation">
-            {visibleLinks.map(({ href, label }) => {
-              const active = href === "/" ? pathname === "/" : pathname.startsWith(href);
+            {visibleLinks.map((link) => {
+              const { href, label, accent } = link;
+              const active = isNavLinkActive(pathname, link);
               return (
                 <Link
                   key={href}
@@ -175,7 +185,11 @@ export function Navbar({ className = "", initialAuth }: NavbarProps) {
                   className={[
                     "inline-flex min-h-11 items-center justify-center rounded-lg px-3 py-2 text-sm font-semibold transition",
                     active
-                      ? "bg-gaucho-blue text-white dark:bg-gaucho-gold dark:text-gaucho-blue-dark"
+                      ? accent === "graduate"
+                        ? "bg-violet-600 text-white"
+                        : accent === "grades"
+                          ? "bg-teal-600 text-white"
+                          : "bg-gaucho-blue text-white dark:bg-gaucho-gold dark:text-gaucho-blue-dark"
                       : "border border-gaucho-blue/15 bg-slate-50 text-gaucho-blue dark:border-gaucho-gold/20 dark:bg-gaucho-blue/30 dark:text-slate-100",
                   ].join(" ")}
                 >

@@ -1,7 +1,7 @@
 "use client";
 
 import dynamic from "next/dynamic";
-import { useCallback, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import type { Node, NodeMouseHandler } from "@xyflow/react";
 
 import { RoadmapGraph } from "@/components/RoadmapGraph";
@@ -24,6 +24,15 @@ import type { MatchedCourse } from "@/lib/transcript/types";
 import type { iGauchoBackNodeData, RoadmapDetail } from "@/lib/types";
 import { useRoadmapSchedule } from "@/lib/use-roadmap-schedule";
 import type { DepartmentFacultyFile } from "@/lib/ucsb-faculty-types";
+
+const FOCUSABLE_SELECTOR = [
+  "a[href]",
+  "button:not([disabled])",
+  "input:not([disabled])",
+  "select:not([disabled])",
+  "textarea:not([disabled])",
+  '[tabindex]:not([tabindex="-1"])',
+].join(",");
 
 const TranscriptUploadPanel = dynamic(
   () =>
@@ -94,7 +103,64 @@ export function RoadmapView({
   plannerCollabEnabled,
 }: RoadmapViewProps) {
   const [selectedNodeId, setSelectedNodeId] = useState<string | null>(null);
+  const [isMobileViewport, setIsMobileViewport] = useState(false);
+  const detailsDialogRef = useRef<HTMLDivElement>(null);
   const schedule = useRoadmapSchedule(roadmap.id);
+
+  useEffect(() => {
+    const mediaQuery = window.matchMedia("(max-width: 1023px)");
+    const syncViewport = () => setIsMobileViewport(mediaQuery.matches);
+
+    syncViewport();
+    mediaQuery.addEventListener("change", syncViewport);
+    return () => mediaQuery.removeEventListener("change", syncViewport);
+  }, []);
+
+  useEffect(() => {
+    if (!selectedNodeId || !isMobileViewport) return;
+
+    const previouslyFocused = document.activeElement as HTMLElement | null;
+    const previousOverflow = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+    detailsDialogRef.current?.focus();
+
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (event.key === "Escape") {
+        event.preventDefault();
+        setSelectedNodeId(null);
+        return;
+      }
+
+      if (event.key !== "Tab" || !detailsDialogRef.current) return;
+
+      const focusable = Array.from(
+        detailsDialogRef.current.querySelectorAll<HTMLElement>(FOCUSABLE_SELECTOR),
+      ).filter((element) => element.getClientRects().length > 0);
+
+      if (focusable.length === 0) {
+        event.preventDefault();
+        detailsDialogRef.current.focus();
+        return;
+      }
+
+      const first = focusable[0];
+      const last = focusable[focusable.length - 1];
+      if (event.shiftKey && document.activeElement === first) {
+        event.preventDefault();
+        last.focus();
+      } else if (!event.shiftKey && document.activeElement === last) {
+        event.preventDefault();
+        first.focus();
+      }
+    };
+
+    document.addEventListener("keydown", handleKeyDown);
+    return () => {
+      document.removeEventListener("keydown", handleKeyDown);
+      document.body.style.overflow = previousOverflow;
+      previouslyFocused?.focus();
+    };
+  }, [isMobileViewport, selectedNodeId]);
 
   const { completedCourseIds, plannedCourseIds, whatIfRemovedId, activeAnalysisMode } =
     schedule.state;
@@ -327,6 +393,13 @@ export function RoadmapView({
           />
         ) : null}
         <div
+          ref={detailsDialogRef}
+          role={selectedNodeId && isMobileViewport ? "dialog" : undefined}
+          aria-modal={selectedNodeId && isMobileViewport ? "true" : undefined}
+          aria-label={
+            selectedNodeId && isMobileViewport ? "Course details" : undefined
+          }
+          tabIndex={selectedNodeId && isMobileViewport ? -1 : undefined}
           className={[
             "shrink-0",
             selectedNodeId

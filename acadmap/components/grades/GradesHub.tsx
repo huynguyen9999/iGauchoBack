@@ -245,20 +245,13 @@ export function GradesHub({
     <div className="space-y-6">
       {metaBanner}
 
-      <div
-        className="flex flex-wrap gap-1 rounded-lg border border-gaucho-blue/15 bg-slate-50 p-1 dark:border-gaucho-gold/15 dark:bg-slate-800"
-        role="tablist"
-        aria-label="Grades tools"
-      >
+      <div className="flex flex-wrap gap-1 rounded-lg border border-gaucho-blue/15 bg-slate-50 p-1 dark:border-gaucho-gold/15 dark:bg-slate-800">
         {TABS.map(({ id, label }) => (
           <button
             key={id}
             type="button"
             onClick={() => handleTabChange(id)}
-            role="tab"
-            aria-selected={tab === id}
-            aria-controls={`grades-panel-${id}`}
-            id={`grades-tab-${id}`}
+            aria-pressed={tab === id}
             className={[
               "min-h-11 rounded-md px-4 py-2 text-sm font-medium transition",
               tab === id
@@ -272,12 +265,7 @@ export function GradesHub({
       </div>
 
       {tab === "search" && (
-        <div
-          id="grades-panel-search"
-          role="tabpanel"
-          aria-labelledby="grades-tab-search"
-          className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_minmax(0,380px)]"
-        >
+        <div className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_minmax(0,380px)]">
           <div className="space-y-4">
             <GradesSearchForm
               departments={initialDepartments}
@@ -319,7 +307,7 @@ export function GradesHub({
       )}
 
       {tab === "ge" && (
-        <div id="grades-panel-ge" role="tabpanel" aria-labelledby="grades-tab-ge">
+        <div>
           <GeAreaExplorer
             areas={geAreas}
             selectedArea={geArea}
@@ -332,11 +320,7 @@ export function GradesHub({
       )}
 
       {tab === "leaderboards" && (
-        <div
-          id="grades-panel-leaderboards"
-          role="tabpanel"
-          aria-labelledby="grades-tab-leaderboards"
-        >
+        <div>
           <GradesLeaderboard
             leaderboards={leaderboards}
             onSelectCourse={(courseId) => handleSelectCourse(courseId)}
