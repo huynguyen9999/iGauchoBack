@@ -1,14 +1,12 @@
 "use client";
 
-import { useCallback, useMemo, useState } from "react";
+import dynamic from "next/dynamic";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import type { Node, NodeMouseHandler } from "@xyflow/react";
 
-import { PlannerWorkspace } from "@/components/planner/PlannerWorkspace";
-import { RoadmapAnalysisPanel } from "@/components/RoadmapAnalysisPanel";
 import { RoadmapGraph } from "@/components/RoadmapGraph";
 import { RoadmapGraphErrorBoundary } from "@/components/RoadmapGraphErrorBoundary";
 import { Sidebar } from "@/components/Sidebar";
-import { TranscriptUploadPanel } from "@/components/TranscriptUploadPanel";
 import {
   buildGraph,
   findBottlenecks,
@@ -27,6 +25,39 @@ import type { iGauchoBackNodeData, RoadmapDetail } from "@/lib/types";
 import { useRoadmapSchedule } from "@/lib/use-roadmap-schedule";
 import type { DepartmentFacultyFile } from "@/lib/ucsb-faculty-types";
 
+const FOCUSABLE_SELECTOR = [
+  "a[href]",
+  "button:not([disabled])",
+  "input:not([disabled])",
+  "select:not([disabled])",
+  "textarea:not([disabled])",
+  '[tabindex]:not([tabindex="-1"])',
+].join(",");
+
+const TranscriptUploadPanel = dynamic(
+  () =>
+    import("@/components/TranscriptUploadPanel").then(
+      (module) => module.TranscriptUploadPanel,
+    ),
+  { ssr: false },
+);
+
+const RoadmapAnalysisPanel = dynamic(
+  () =>
+    import("@/components/RoadmapAnalysisPanel").then(
+      (module) => module.RoadmapAnalysisPanel,
+    ),
+  { ssr: false },
+);
+
+const PlannerWorkspace = dynamic(
+  () =>
+    import("@/components/planner/PlannerWorkspace").then(
+      (module) => module.PlannerWorkspace,
+    ),
+  { ssr: false },
+);
+
 type ExternalRule = {
   exam?: string;
   source?: string;
@@ -38,6 +69,7 @@ type ExternalRule = {
 
 export type RoadmapViewProps = {
   roadmap: RoadmapDetail;
+  majorHref: string;
   departmentFaculty?: DepartmentFacultyFile | null;
   defaultCatalogQuarter?: string;
   auditRules: DegreeAuditRules | null;
@@ -62,6 +94,7 @@ function statusMapFromSchedule(
 
 export function RoadmapView({
   roadmap,
+  majorHref,
   departmentFaculty,
   defaultCatalogQuarter,
   auditRules,
@@ -70,7 +103,64 @@ export function RoadmapView({
   plannerCollabEnabled,
 }: RoadmapViewProps) {
   const [selectedNodeId, setSelectedNodeId] = useState<string | null>(null);
+  const [isMobileViewport, setIsMobileViewport] = useState(false);
+  const detailsDialogRef = useRef<HTMLDivElement>(null);
   const schedule = useRoadmapSchedule(roadmap.id);
+
+  useEffect(() => {
+    const mediaQuery = window.matchMedia("(max-width: 1023px)");
+    const syncViewport = () => setIsMobileViewport(mediaQuery.matches);
+
+    syncViewport();
+    mediaQuery.addEventListener("change", syncViewport);
+    return () => mediaQuery.removeEventListener("change", syncViewport);
+  }, []);
+
+  useEffect(() => {
+    if (!selectedNodeId || !isMobileViewport) return;
+
+    const previouslyFocused = document.activeElement as HTMLElement | null;
+    const previousOverflow = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+    detailsDialogRef.current?.focus();
+
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (event.key === "Escape") {
+        event.preventDefault();
+        setSelectedNodeId(null);
+        return;
+      }
+
+      if (event.key !== "Tab" || !detailsDialogRef.current) return;
+
+      const focusable = Array.from(
+        detailsDialogRef.current.querySelectorAll<HTMLElement>(FOCUSABLE_SELECTOR),
+      ).filter((element) => element.getClientRects().length > 0);
+
+      if (focusable.length === 0) {
+        event.preventDefault();
+        detailsDialogRef.current.focus();
+        return;
+      }
+
+      const first = focusable[0];
+      const last = focusable[focusable.length - 1];
+      if (event.shiftKey && document.activeElement === first) {
+        event.preventDefault();
+        last.focus();
+      } else if (!event.shiftKey && document.activeElement === last) {
+        event.preventDefault();
+        first.focus();
+      }
+    };
+
+    document.addEventListener("keydown", handleKeyDown);
+    return () => {
+      document.removeEventListener("keydown", handleKeyDown);
+      document.body.style.overflow = previousOverflow;
+      previouslyFocused?.focus();
+    };
+  }, [isMobileViewport, selectedNodeId]);
 
   const { completedCourseIds, plannedCourseIds, whatIfRemovedId, activeAnalysisMode } =
     schedule.state;
@@ -278,10 +368,10 @@ export function RoadmapView({
 
   return (
     <div className="space-y-4">
-      <div className="flex h-[calc(100vh-8.5rem)] min-h-[520px] flex-col gap-4 lg:flex-row">
-        <div className="min-h-[360px] flex-1 lg:min-h-0">
+      <div className="flex flex-col gap-4 lg:h-[calc(100vh-8.5rem)] lg:min-h-[520px] lg:flex-row">
+        <div className="h-[68svh] min-h-[420px] flex-1 lg:h-auto lg:min-h-0">
           <RoadmapGraphErrorBoundary
-            majorHref={`/schools/${roadmap.school.short_name}/engineering/${roadmap.major.slug}`}
+            majorHref={majorHref}
             majorName={roadmap.major.name}
           >
             <RoadmapGraph
@@ -290,11 +380,34 @@ export function RoadmapView({
               focusedNodeId={selectedNodeId}
               onNodeClick={onNodeClick}
               onPaneClick={onPaneClick}
-              className="h-full min-h-[360px]"
+              className="h-full min-h-[420px] lg:min-h-[360px]"
             />
           </RoadmapGraphErrorBoundary>
         </div>
-        <div className="h-[280px] shrink-0 lg:h-auto lg:w-[340px]">
+        {selectedNodeId ? (
+          <button
+            type="button"
+            aria-label="Close course details"
+            className="fixed inset-0 z-40 bg-slate-950/50 lg:hidden"
+            onClick={onClose}
+          />
+        ) : null}
+        <div
+          ref={detailsDialogRef}
+          role={selectedNodeId && isMobileViewport ? "dialog" : undefined}
+          aria-modal={selectedNodeId && isMobileViewport ? "true" : undefined}
+          aria-label={
+            selectedNodeId && isMobileViewport ? "Course details" : undefined
+          }
+          tabIndex={selectedNodeId && isMobileViewport ? -1 : undefined}
+          className={[
+            "shrink-0",
+            selectedNodeId
+              ? "fixed inset-x-0 bottom-0 z-50 h-[min(72svh,640px)] p-3 pb-[calc(env(safe-area-inset-bottom)+0.75rem)]"
+              : "hidden",
+            "lg:static lg:block lg:h-auto lg:w-[340px] lg:p-0",
+          ].join(" ")}
+        >
           <Sidebar
             selectedNode={sidebarNode as Node<iGauchoBackNodeData> | null}
             departmentFaculty={departmentFaculty}

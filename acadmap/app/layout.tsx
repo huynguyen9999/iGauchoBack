@@ -40,9 +40,15 @@ export default async function RootLayout({
         </Script>
       </head>
       <body className={`${inter.className} flex min-h-screen flex-col`}>
+        <a
+          href="#main-content"
+          className="fixed left-4 top-4 z-[100] -translate-y-24 rounded-lg bg-gaucho-blue px-4 py-3 font-semibold text-white shadow-lg transition focus:translate-y-0 dark:bg-gaucho-gold dark:text-gaucho-blue-dark"
+        >
+          Skip to main content
+        </a>
         <Navbar initialAuth={initialAuth} />
-        <main className="flex-1">{children}</main>
-        <footer className="border-t border-gaucho-blue/10 bg-white py-6 text-center text-xs text-slate-500 dark:border-gaucho-gold/15 dark:bg-gaucho-blue-dark">
+        <main id="main-content" className="min-w-0 flex-1">{children}</main>
+        <footer className="border-t border-gaucho-blue/10 bg-white px-4 py-6 pb-[calc(env(safe-area-inset-bottom)+1.5rem)] text-center text-xs text-slate-500 dark:border-gaucho-gold/15 dark:bg-gaucho-blue-dark">
           {APP_NAME} · {APP_FOOTER_TAGLINE}
         </footer>
       </body>

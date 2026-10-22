@@ -251,8 +251,9 @@ export function GradesHub({
             key={id}
             type="button"
             onClick={() => handleTabChange(id)}
+            aria-pressed={tab === id}
             className={[
-              "rounded-md px-4 py-2 text-sm font-medium transition",
+              "min-h-11 rounded-md px-4 py-2 text-sm font-medium transition",
               tab === id
                 ? "bg-teal-600 text-white"
                 : "text-slate-600 hover:text-gaucho-blue dark:text-slate-300",
@@ -306,21 +307,25 @@ export function GradesHub({
       )}
 
       {tab === "ge" && (
-        <GeAreaExplorer
-          areas={geAreas}
-          selectedArea={geArea}
-          courses={geCourses}
-          loading={loadingGe}
-          onAreaChange={handleGeAreaChange}
-          onSelectCourse={(courseId) => handleSelectCourse(courseId)}
-        />
+        <div>
+          <GeAreaExplorer
+            areas={geAreas}
+            selectedArea={geArea}
+            courses={geCourses}
+            loading={loadingGe}
+            onAreaChange={handleGeAreaChange}
+            onSelectCourse={(courseId) => handleSelectCourse(courseId)}
+          />
+        </div>
       )}
 
       {tab === "leaderboards" && (
-        <GradesLeaderboard
-          leaderboards={leaderboards}
-          onSelectCourse={(courseId) => handleSelectCourse(courseId)}
-        />
+        <div>
+          <GradesLeaderboard
+            leaderboards={leaderboards}
+            onSelectCourse={(courseId) => handleSelectCourse(courseId)}
+          />
+        </div>
       )}
     </div>
   );

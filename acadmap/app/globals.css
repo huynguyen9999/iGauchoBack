@@ -34,6 +34,12 @@ html {
 
 body {
   @apply min-h-screen bg-[var(--acad-surface)] text-slate-900 antialiased dark:bg-[var(--acad-surface)] dark:text-slate-100;
+  overflow-x: clip;
+}
+
+:focus-visible {
+  outline: 3px solid var(--acad-accent);
+  outline-offset: 2px;
 }
 
 /* React Flow */
@@ -44,10 +50,6 @@ body {
 
 .igauchoback-flow .react-flow__edge.selected .react-flow__edge-path {
   stroke: var(--acad-accent);
-}
-
-.igauchoback-flow .react-flow__attribution {
-  display: none;
 }
 
 .igauchoback-flow .react-flow__pane {
@@ -69,11 +71,11 @@ body {
 
 @layer components {
   .btn-primary {
-    @apply inline-flex items-center justify-center rounded-lg bg-gaucho-blue px-5 py-2.5 text-sm font-semibold text-white transition hover:bg-gaucho-blue-light;
+    @apply inline-flex min-h-11 items-center justify-center rounded-lg bg-gaucho-blue px-5 py-2.5 text-sm font-semibold text-white transition hover:bg-gaucho-blue-light;
   }
 
   .btn-secondary {
-    @apply inline-flex items-center justify-center rounded-lg border border-gaucho-blue/25 bg-white px-5 py-2.5 text-sm font-semibold text-gaucho-blue transition hover:border-gaucho-blue/40 hover:bg-gaucho-blue/5 dark:border-gaucho-gold/25 dark:bg-gaucho-blue-dark/40 dark:text-gaucho-gold-light dark:hover:bg-gaucho-blue-dark/60;
+    @apply inline-flex min-h-11 items-center justify-center rounded-lg border border-gaucho-blue/25 bg-white px-5 py-2.5 text-sm font-semibold text-gaucho-blue transition hover:border-gaucho-blue/40 hover:bg-gaucho-blue/5 dark:border-gaucho-gold/25 dark:bg-gaucho-blue-dark/40 dark:text-gaucho-gold-light dark:hover:bg-gaucho-blue-dark/60;
   }
 }
 

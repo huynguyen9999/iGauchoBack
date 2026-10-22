@@ -10,6 +10,7 @@ import {
   type Node,
   type Edge,
   type NodeMouseHandler,
+  type ReactFlowInstance,
 } from "@xyflow/react";
 import "@xyflow/react/dist/style.css";
 
@@ -123,8 +124,16 @@ export function RoadmapGraph({
   );
 
   const handleInit = useCallback(
-    (instance: { fitView: (options?: { padding?: number }) => void }) => {
+    (instance: ReactFlowInstance) => {
       requestAnimationFrame(() => {
+        if (window.matchMedia("(max-width: 639px)").matches) {
+          instance.fitView({
+            padding: 0.15,
+            maxZoom: 0.8,
+          });
+          return;
+        }
+
         instance.fitView({ padding: 0.2 });
       });
     },
@@ -133,8 +142,13 @@ export function RoadmapGraph({
 
   return (
     <div
-      className={`h-full w-full rounded-lg border border-gaucho-blue/15 bg-white dark:border-gaucho-gold/15 dark:bg-gaucho-blue-dark/60 ${className}`}
+      role="region"
+      aria-label="Interactive degree roadmap. Drag to pan, pinch or use the controls to zoom, and select a course for details."
+      className={`relative h-full w-full rounded-lg border border-gaucho-blue/15 bg-white dark:border-gaucho-gold/15 dark:bg-gaucho-blue-dark/60 ${className}`}
     >
+      <p className="pointer-events-none absolute left-1/2 top-3 z-10 -translate-x-1/2 rounded-full bg-gaucho-blue/90 px-3 py-1.5 text-center text-[11px] font-medium text-white shadow sm:hidden">
+        Pinch to zoom · drag to explore · tap a course
+      </p>
       <ReactFlow
         nodes={nodes}
         edges={edges}
@@ -148,9 +162,8 @@ export function RoadmapGraph({
         elementsSelectable
         minZoom={0.25}
         maxZoom={1.5}
-        proOptions={{ hideAttribution: true }}
         className={[
-          "igauchoback-flow",
+          "!absolute !inset-0 !h-auto !w-auto igauchoback-flow",
           focusedNodeId ? "igauchoback-flow--focused" : "",
         ].join(" ")}
       >
@@ -162,7 +175,7 @@ export function RoadmapGraph({
         />
         <Controls
           showInteractive={false}
-          className="!rounded-lg !border-gaucho-blue/20 !bg-white !shadow-card dark:!border-gaucho-gold/20 dark:!bg-gaucho-blue-dark [&>button]:!border-slate-200 [&>button]:!bg-white [&>button]:!text-gaucho-blue dark:[&>button]:!border-gaucho-blue/40 dark:[&>button]:!bg-gaucho-blue-dark dark:[&>button]:!text-gaucho-gold [&>button:hover]:!bg-gaucho-blue/5 dark:[&>button:hover]:!bg-gaucho-blue/60"
+          className="!rounded-lg !border-gaucho-blue/20 !bg-white !shadow-card dark:!border-gaucho-gold/20 dark:!bg-gaucho-blue-dark [&>button]:!h-11 [&>button]:!w-11 [&>button]:!border-slate-200 [&>button]:!bg-white [&>button]:!text-gaucho-blue dark:[&>button]:!border-gaucho-blue/40 dark:[&>button]:!bg-gaucho-blue-dark dark:[&>button]:!text-gaucho-gold [&>button:hover]:!bg-gaucho-blue/5 dark:[&>button:hover]:!bg-gaucho-blue/60"
         />
         <MiniMap
           nodeColor={(node) =>
@@ -171,7 +184,7 @@ export function RoadmapGraph({
           maskColor={
             isDark ? "rgba(0, 40, 71, 0.75)" : "rgba(247, 249, 251, 0.85)"
           }
-          className="!rounded-lg !border !border-gaucho-blue/20 !bg-white/95 dark:!border-gaucho-gold/20 dark:!bg-gaucho-blue-dark/90"
+          className="!hidden !rounded-lg !border !border-gaucho-blue/20 !bg-white/95 sm:!block dark:!border-gaucho-gold/20 dark:!bg-gaucho-blue-dark/90"
         />
       </ReactFlow>
     </div>

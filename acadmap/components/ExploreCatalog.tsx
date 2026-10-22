@@ -127,7 +127,8 @@ function ActiveFilterChips({
           key={chip.label}
           type="button"
           onClick={chip.clear}
-          className="inline-flex items-center gap-1 rounded-full bg-gaucho-blue/10 px-2.5 py-1 text-xs font-medium text-gaucho-blue dark:bg-gaucho-gold/15 dark:text-gaucho-gold"
+          aria-label={`Remove ${chip.label} filter`}
+          className="inline-flex min-h-11 items-center gap-1 rounded-full bg-gaucho-blue/10 px-3 py-2 text-xs font-medium text-gaucho-blue dark:bg-gaucho-gold/15 dark:text-gaucho-gold"
         >
           {chip.label}
           <span aria-hidden>×</span>
@@ -165,10 +166,10 @@ function ExploreEmptyState({
         </>
       )}
       <div className="mt-6 flex flex-wrap justify-center gap-3">
-        <Link href="/schools" className="btn-secondary text-xs">
+        <Link href="/schools" className="btn-secondary min-h-11 text-xs">
           Browse school hubs
         </Link>
-        <Link href="/contribute" className="btn-primary text-xs">
+        <Link href="/contribute" className="btn-primary min-h-11 text-xs">
           Help build a graph
         </Link>
       </div>
@@ -241,7 +242,9 @@ export function ExploreCatalog({
 
   const handleCompare = (major: ExploreMajor) => {
     setCompareQueue((prev) => {
-      if (prev.some((m) => m.id === major.id)) return prev;
+      if (prev.some((m) => m.id === major.id)) {
+        return prev.filter((m) => m.id !== major.id);
+      }
       const next = [...prev, major].slice(-2);
       return next;
     });
@@ -263,6 +266,7 @@ export function ExploreCatalog({
           <ExploreMajorCard
             major={major}
             onCompare={handleCompare}
+            compareSelected={compareQueue.some((m) => m.id === major.id)}
             compareDisabled={
               compareQueue.length >= 2 &&
               !compareQueue.some((m) => m.id === major.id)
@@ -351,7 +355,7 @@ export function ExploreCatalog({
             <button
               type="button"
               onClick={() => setCompareQueue([])}
-              className="text-xs text-slate-500 hover:text-gaucho-blue"
+              className="min-h-11 rounded-md px-2 text-xs text-slate-500 hover:bg-slate-100 hover:text-gaucho-blue dark:hover:bg-gaucho-blue/40"
             >
               Clear compare ({compareQueue.length}/2)
             </button>
@@ -374,8 +378,9 @@ export function ExploreCatalog({
             key={mode}
             type="button"
             onClick={() => setView(mode)}
+            aria-pressed={effectiveFilters.view === mode}
             className={[
-              "rounded-md px-2.5 py-1 text-xs font-medium transition",
+              "min-h-11 rounded-md px-3 py-2 text-xs font-medium transition",
               effectiveFilters.view === mode
                 ? "bg-gaucho-blue text-white dark:bg-gaucho-gold dark:text-gaucho-blue-dark"
                 : "text-slate-600 hover:bg-slate-100 dark:text-slate-400 dark:hover:bg-gaucho-blue/40",
@@ -386,8 +391,10 @@ export function ExploreCatalog({
         ))}
         <button
           type="button"
-          className="ml-auto text-xs font-medium text-gaucho-blue dark:text-gaucho-gold lg:hidden"
+          className="ml-auto min-h-11 rounded-md px-3 py-2 text-xs font-medium text-gaucho-blue hover:bg-slate-100 dark:text-gaucho-gold dark:hover:bg-gaucho-blue/40 lg:hidden"
           onClick={() => setMobileFiltersOpen((o) => !o)}
+          aria-expanded={mobileFiltersOpen}
+          aria-controls="explore-filters"
         >
           {mobileFiltersOpen ? "Hide filters" : "Show filters"}
         </button>
@@ -395,6 +402,7 @@ export function ExploreCatalog({
 
       <div className="flex flex-col gap-6 lg:flex-row lg:items-start">
         <div
+          id="explore-filters"
           className={[
             "lg:w-64 lg:shrink-0",
             mobileFiltersOpen ? "block" : "hidden lg:block",

@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 
 import type { NavAuthState } from "@/lib/auth-session";
 import { createBrowserClient } from "@/lib/supabase-browser";
@@ -21,6 +21,7 @@ export function AuthControls({ initialAuth }: AuthControlsProps) {
   const [state, setState] = useState<AuthState>({
     email: initialAuth.email,
   });
+  const emailRef = useRef(initialAuth.email);
   const supabaseReady = initialAuth.configured;
 
   const signInHref = useMemo(() => {
@@ -33,9 +34,17 @@ export function AuthControls({ initialAuth }: AuthControlsProps) {
 
     const supabase = createBrowserClient();
 
-    const { data: listener } = supabase.auth.onAuthStateChange((_event, session) => {
-      setState({ email: session?.user?.email ?? null });
-      router.refresh();
+    const { data: listener } = supabase.auth.onAuthStateChange((event, session) => {
+      if (event === "INITIAL_SESSION") return;
+
+      const email = session?.user?.email ?? null;
+      if (emailRef.current === email) return;
+
+      emailRef.current = email;
+      setState({ email });
+      if (event === "SIGNED_IN" || event === "SIGNED_OUT") {
+        router.refresh();
+      }
     });
 
     return () => {
@@ -51,10 +60,12 @@ export function AuthControls({ initialAuth }: AuthControlsProps) {
   }
 
   if (!state.email) {
+    if (pathname.startsWith("/auth/sign-in")) return null;
+
     return (
       <Link
         href={signInHref}
-        className="rounded-md border border-gaucho-blue/20 px-3 py-2 text-xs font-semibold text-gaucho-blue transition hover:bg-gaucho-blue/5 dark:border-gaucho-gold/25 dark:text-gaucho-gold-light"
+        className="inline-flex min-h-11 items-center rounded-md border border-gaucho-blue/20 px-3 py-2 text-xs font-semibold text-gaucho-blue transition hover:bg-gaucho-blue/5 dark:border-gaucho-gold/25 dark:text-gaucho-gold-light"
       >
         Sign in
       </Link>
@@ -69,7 +80,7 @@ export function AuthControls({ initialAuth }: AuthControlsProps) {
       <button
         type="button"
         onClick={signOut}
-        className="rounded-md border border-gaucho-gold/30 px-3 py-2 text-xs font-semibold text-gaucho-blue transition hover:bg-gaucho-gold/10 dark:text-gaucho-gold-light"
+        className="inline-flex min-h-11 items-center rounded-md border border-gaucho-gold/30 px-3 py-2 text-xs font-semibold text-gaucho-blue transition hover:bg-gaucho-gold/10 dark:text-gaucho-gold-light"
       >
         Sign out
       </button>

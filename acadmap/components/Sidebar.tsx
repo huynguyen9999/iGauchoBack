@@ -105,7 +105,7 @@ export function Sidebar({
             <button
               type="button"
               onClick={onClose}
-              className="rounded-lg p-1.5 text-slate-600 dark:text-slate-400 transition hover:bg-slate-100 dark:bg-slate-800 hover:text-slate-900 dark:text-slate-100"
+              className="inline-flex min-h-11 min-w-11 items-center justify-center rounded-lg p-2 text-xl leading-none text-slate-600 transition hover:bg-slate-100 hover:text-slate-900 dark:bg-slate-800 dark:text-slate-100"
               aria-label="Close panel"
             >
               ×

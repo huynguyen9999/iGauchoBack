@@ -45,7 +45,7 @@ export function CourseSearchForm({
         <select
           value={subject}
           onChange={(e) => onSubjectChange(e.target.value)}
-          className="rounded-lg border border-gaucho-blue/20 bg-slate-50 px-3 py-2 text-sm dark:border-gaucho-gold/20 dark:bg-slate-800"
+          className="min-h-11 rounded-lg border border-gaucho-blue/20 bg-slate-50 px-3 py-2 text-base dark:border-gaucho-gold/20 dark:bg-slate-800 sm:text-sm"
         >
           {subjects.map((s) => (
             <option key={s.subjectCode} value={s.subjectCode}>
@@ -62,7 +62,7 @@ export function CourseSearchForm({
         <select
           value={quarter}
           onChange={(e) => onQuarterChange(e.target.value)}
-          className="rounded-lg border border-gaucho-blue/20 bg-slate-50 px-3 py-2 text-sm dark:border-gaucho-gold/20 dark:bg-slate-800"
+          className="min-h-11 rounded-lg border border-gaucho-blue/20 bg-slate-50 px-3 py-2 text-base dark:border-gaucho-gold/20 dark:bg-slate-800 sm:text-sm"
         >
           {quarters.map((q) => (
             <option key={q.code} value={q.code}>
@@ -83,13 +83,14 @@ export function CourseSearchForm({
               type="button"
               onClick={() => onLevelChange(value)}
               className={[
-                "flex-1 rounded-md px-2 py-1.5 text-xs font-medium transition",
+                "min-h-11 flex-1 rounded-md px-2 py-2 text-xs font-medium transition",
                 level === value
                   ? value === "G"
                     ? "bg-violet-600 text-white"
                     : "bg-gaucho-blue text-white dark:bg-gaucho-gold dark:text-gaucho-blue-dark"
                   : "text-slate-600 hover:text-gaucho-blue dark:text-slate-300 dark:hover:text-gaucho-gold-light",
               ].join(" ")}
+              aria-pressed={level === value}
             >
               {label}
             </button>
@@ -106,7 +107,7 @@ export function CourseSearchForm({
           value={query}
           onChange={(e) => onQueryChange(e.target.value)}
           placeholder="Search by course code or title…"
-          className="rounded-lg border border-gaucho-blue/20 bg-slate-50 px-3 py-2 text-sm dark:border-gaucho-gold/20 dark:bg-slate-800"
+          className="min-h-11 rounded-lg border border-gaucho-blue/20 bg-slate-50 px-3 py-2 text-base dark:border-gaucho-gold/20 dark:bg-slate-800 sm:text-sm"
         />
       </label>
     </form>
